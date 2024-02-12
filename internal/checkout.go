@@ -3,7 +3,6 @@ package internal
 import "fmt"
 
 type Item struct {
-	// SKU          string
 	UnitPrice    int64
 	SpecialOffer SpecialOffer
 }
@@ -27,14 +26,14 @@ func defaultItems() map[string]Item {
 	}
 }
 
-func initialiseCheckout(item map[string]Item) Checkout {
+func InitialiseCheckout(item map[string]Item) Checkout {
 	return Checkout{
 		Items:        item,
 		ScannedItems: make(map[string]int64),
 	}
 }
 
-func (c *Checkout) scan(item string) {
+func (c *Checkout) Scan(item string) {
 	if _, exists := c.Items[item]; exists {
 		c.ScannedItems[item]++
 	}
@@ -56,50 +55,42 @@ func (c *Checkout) calculateItemPrice(item string, quantity int64) int64 {
 	return itemPrice
 }
 
-func (c *Checkout) calculateTotalScannedItems() int64 {
+func (c *Checkout) CalculateTotalPrice() int64 {
 	var totalPrice int64 = 0
 
 	for item, quantity := range c.ScannedItems {
-		fmt.Println("item: ", item)
 		totalPrice += c.calculateItemPrice(item, quantity)
 	}
 	return totalPrice
 }
 
-func updateItems(items map[string]Item, newItems map[string]Item) {
+func UpdateItems(items map[string]Item, newItems map[string]Item) {
 	for key, newItem := range newItems {
-		if item, exists := items[key]; exists {
-			item.UnitPrice = newItem.UnitPrice
-			item.SpecialOffer.Quantity = newItem.SpecialOffer.Quantity
-			item.SpecialOffer.Price = newItem.SpecialOffer.Price
-		} else {
-			items[key] = newItem
-		}
+		items[key] = newItem
 	}
 }
 
 func StoreCheckout() {
 	items := defaultItems()
+	checkout := InitialiseCheckout(items)
 
-	checkout := initialiseCheckout(items)
+	// Add items and calculate total price
+	checkout.Scan("A")
+	checkout.Scan("C")
+	checkout.Scan("B")
+	checkout.Scan("B")
+	checkout.Scan("D")
+	checkout.Scan("A")
+	checkout.Scan("A")
 
-	fmt.Printf("%+v\n", checkout)
+	fmt.Printf("Total price: %+v\n", checkout.CalculateTotalPrice())
+}
 
-	checkout.scan("A")
-	checkout.scan("C")
-	checkout.scan("B")
-	checkout.scan("B")
-	checkout.scan("D")
-	checkout.scan("A")
-	checkout.scan("A")
+func StoreUpdateitems() {
+	items := defaultItems()
 
-	fmt.Printf("%+v\n", checkout)
-
-	fmt.Printf("%+v\n", checkout.calculateItemPrice("A", 5))
-
-	fmt.Printf("total price: %+v\n", checkout.calculateTotalScannedItems())
-
-	updateItems(items, map[string]Item{
+	// Update Item A and add new Item E
+	UpdateItems(items, map[string]Item{
 		"A": {UnitPrice: 60, SpecialOffer: SpecialOffer{}},
 		"E": {UnitPrice: 10, SpecialOffer: SpecialOffer{
 			Quantity: 5, Price: 30,
